@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Assignment 3 part 1 - Object Oriented</title>
+<style>
+	html, body, p, h2, h1, section{
+		margin: 0; 
+		padding: 0;
+		-webkit-backface-visibility: hidden;
+	}
+	
+	body{
+		background-color: #e5e5e5;
+		font-family: Helvetica, Arial, Verdana, sans-serif;
+		height: 100%;
+	}
+		
+	article{
+		border-bottom: 1px solid #999;
+		height: auto;
+	}
+	
+	h1{	
+		text-align: center;
+		margin: 0;
+		font-size: .6cm;
+		padding: .3em 0;
+		color: white;
+		background: rgb(137,88,70); /* Old browsers */
+		background: -moz-linear-gradient(top,  rgba(137,88,70,1) 40%, rgba(114,65,47,1) 99%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(40%,rgba(137,88,70,1)), color-stop(99%,rgba(114,65,47,1))); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top,  rgba(137,88,70,1) 40%,rgba(114,65,47,1) 99%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top,  rgba(137,88,70,1) 40%,rgba(114,65,47,1) 99%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top,  rgba(137,88,70,1) 40%,rgba(114,65,47,1) 99%); /* IE10+ */
+		background: linear-gradient(top,  rgba(137,88,70,1) 40%,rgba(114,65,47,1) 99%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#895846', endColorstr='#72412f',GradientType=0 ); /* IE6-9 */
+	}	
+	
+	#entries{
+		
+	}
+	
+    #entries p {
+    	opacity: 0; 
+        height: 0;
+        overflow: hidden;
+        padding: 0cm .2cm 0cm 0.2cm;
+	    -webkit-transition: all 300ms ease-out;
+        -o-transition: all 300ms ease-out;
+        -moz-transition: all 300ms ease-out;
+        -ms-transition: all 300ms ease-out;
+        transition: all 300ms ease-out;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    #entries .active p {
+        opacity: 1; 
+        padding: .2cm;
+        background-color: #ececec;
+        box-shadow: inset 0px 3px 20px #999;
+    }
+   
+    h2{
+    	padding: .3cm;
+    	font-size: 1.1em;
+    	line-height: 1cm;
+    	text-overflow: ellipsis; 
+    	background-color: #d5d5d5;
+    	-webkit-transition: all 300ms ease-out;
+        -o-transition: all 300ms ease-out;
+        -moz-transition: all 300ms ease-out;
+        -ms-transition: all 300ms ease-out;
+        transition: all 300ms ease-out;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    #entries .active h2{
+    	background-color: green;
+    	color: white;
+    }
+</style>
+<script src="https://raw.github.com/marcoscaceres/DOMTokenList.js/master/DOMTokenList.js"></script> 
+<script>
+    'use strict';
+window.addEventListener('load', function setUp() {
+    //article elements
+    var articles = document.querySelectorAll('article');
+    //diary entries
+    var entries = [];
+    //the main h1
+    var h1 = document.querySelector('body > h1');
+    //Control showing/hidding all entries
+    var controller = new DiaryController(entries, h1);
+    //Create the diary entry objects
+    for (var i = 0; i < articles.length; i++) {
+        var article = articles[i];
+        var entry = new DiaryEntry(article);
+        entries.push(entry);
+    }
+    //using eventing, link the diary entries together so
+    //that opening one closes the others.
+    for (var i = 0; i < entries.length; i++) {
+        var target = entries[i];
+        for (var j = 0; j < entries.length; j++) {
+            var listener = entries[j];
+            if (target !== listener) {
+                target.on('show', listener.hide);
+            }
+        }
+    }
+    /*
+        DiaryController Class
+        Controls showing and hidding of all entries
+        */
+    function DiaryController(diaryEntries, elem) {
+        var state = 'hidden';
+        elem.addEventListener('click', toggleAll, false);
+        //show/hide all entries
+        function toggleAll() {
+            if (!areAnyActive() && state === 'hidden') {
+                showAll();
+                state = 'showing';
+                return;
+            }
+            if (state === 'showing' && !areAnyActive()) {
+                showAll();
+                state = 'showing';
+                return;
+            }
+            hideAll();
+            state = 'hidden';
+        }
+        //Check if any entries are active
+        function areAnyActive() {
+            for (var i = 0; i < diaryEntries.length; i++) {
+                var entry = diaryEntries[i];
+                if (entry.isActive) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        //Show all entries
+        function showAll() {
+            for (var i = 0; i < diaryEntries.length; i++) {
+                var entry = diaryEntries[i];
+                entry.show(true);
+            }
+        }
+        //hide all entries
+        function hideAll() {
+            for (var i = 0; i < diaryEntries.length; i++) {
+                var entry = diaryEntries[i];
+                entry.hide();
+            }
+        }
+    }
+    /*
+        DiaryEntry class
+        */
+    function DiaryEntry(entry) {
+        var para = entry.querySelector('p');
+        var head = entry.querySelector('h2');
+        var listeners = {
+            'show': [],
+            'hide': []
+        };
+        Object.defineProperty(this, 'isActive', {
+            get: isActive
+        });
+        //public interfaces
+        Object.defineProperty(this, 'show', {
+            value: show
+        });
+        Object.defineProperty(this, 'hide', {
+            value: hide
+        });
+        Object.defineProperty(this, 'on', {
+            value: on
+        });
+        Object.defineProperty(this, 'toggle', {
+            value: toggle
+        });
+        //toggle show/hide on click
+        head.addEventListener('click', toggle, false);
+
+        function on(event, listener) {
+            switch (event) {
+            case 'show':
+                {
+                    listeners.show.push(listener);
+                    break;
+                }
+            case 'hide':
+                {
+                    listeners.hide.push(listener);
+                    break;
+                }
+            }
+        }
+        //check if active
+        function isActive() {
+            return entry.classList.contains('active');
+        }
+        //show/hide
+        function toggle() {
+            (isActive()) ? hide() : show();
+        }
+
+        function hide() {
+            window.removeEventListener('resize', resize, false);
+            window.removeEventListener('orientationchange', resetHeight, false);
+            entry.classList.remove('active');
+            para.style.height = '0';
+            for (var i = 0; i < listeners.hide.length; i++) {
+                listeners.hide[i]();
+            }
+        }
+        /*
+            @param force force show, don't notify listeners
+            */
+        function show(force) {
+            window.addEventListener('resize', resize, false);
+            window.addEventListener('orientationchange', resetHeight, false);
+            entry.classList.add('active');
+            resize();
+            //lets listeners know
+            if (!force) {
+                for (var i = 0; i < listeners.show.length; i++) {
+                    listeners.show[i]();
+                }
+            }
+        }
+
+        function resetHeight() {
+            para.style.height = '0';
+            resize();
+        }
+        //Resize, on resize;
+        //handle orientation change and resize
+        function resize(e) {
+            var computedStyle = window.getComputedStyle(para);
+            var computedHeight = parseInt(computedStyle.height);
+            var clientHeight = para.clientHeight;
+            var scrollHeight = para.scrollHeight;
+            //detect first open
+            if (!computedHeight && !clientHeight) {
+                para.style.height = scrollHeight + 'px';
+                return;
+            }
+            //detect overflow
+            if (scrollHeight > clientHeight) {
+                var padding = parseInt(computedStyle.paddingTop) + parseInt(computedStyle.paddingBottom);
+                para.style.height = (scrollHeight - padding) + 'px';
+            }
+            //TODO: detect underflow
+        }
+    }
+}, false);
+
+</script>
+<h1>My Diary Entries</h1>
+<section id='entries'>
+    <article>
+        <h2>Wrote my first mobile application</h2>
+        <p>Today I wrote my first mobile application. It was great! I had huge amounts
+            of fun, it was a lot easier than I expected, and I was so happy I spent
+            the rest of the day celebrating.</p>
+    </article>
+    <article>
+        <h2>Wrote another mobile application</h2>
+        <p>I am on such a roll with these mobile Web applications that I went crazy
+            and wrote a second one. I am so happy I cannot stop singing at the top
+            of my lungs. My cat seems worried that I've finally lost it completely,
+            but I don't care — it's mobile Web all the way from now on!</p>
+    </article>
+    <article>
+        <h2>Must stop writing mobile applications</h2>
+        <p>My fingers are sore from writing so many great mobile Web applications.
+            I know that I should stop and take a break, but there are so many great
+            things to do with this technology that I really don't know how to stop!</p>
+    </article>
+        <article>
+        <h2>OMG! I really have to stop</h2>
+        <p>If I don't stop, I will be fired from my day job! I've been at this all weekend and 
+        now it's eating into my work week. This was only supposed to take 20 minutes to do.</p>
+    </article>
+</section>
