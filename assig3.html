@@ -17,76 +17,6 @@
 	color: red;	
 }
 </style>
-<script>
-"use strict"; 
-window.addEventListener("load", function clickBinder(){
-	//set show all on H1
-	var h1 = document.querySelector("h1");
-	
-	var state = "";
- 	// initially, they are all hidden 
-	h1.addEventListener("click", function(e){ var newState =  showHideAll(state); state = newState }, false);  
-	
-	function showHideAll(state){
-		var articles = document.querySelectorAll("#entries article");
-		var activeArticles = document.querySelectorAll("#entries .active")
-		
-		if(!state && activeArticles.length === 0){
-			var state = "active";
-		}else if(activeArticles.length > 0){
-			state = "";
-		}
-		
-		for(var i = 0; i < articles.length; i++){
-				var article = articles[i];
-				article.setAttribute("class", state); 
-				var p = article.querySelector("p");
-				if(state){
-					p.style.height =  p.scrollHeight + "px";
-				}else{
-					p.style.height =  "0px";
-				}
-		}
-		return state;
-	}
-	
-	
-	//set up click events on the articles
-	var articles = document.querySelectorAll("#entries article");
-	for(var i = 0; i < articles.length; i++){
-		var article = articles[i]; 
-		var func    = (function(e){
-			 			var thisArticle = article; 
-			 			return function(e){changeClass(e, thisArticle)}
-		})(); 
-		article.addEventListener("click", func, false); 
-	}
-	
-	
-	function changeClass(e, article){
-		var activeArticles = document.querySelectorAll("#entries .active")
-		var p = article.querySelector("p"); 
-		if(article.hasAttribute("class") === false || article.getAttribute("class") !== "active"){
-			article.setAttribute("class", "active");
-			p.style.height =  p.scrollHeight + "px";
-		}else if(activeArticles.length === 1){		
-			article.setAttribute("class", "");
-			p.style.height =  0 + "px";
-		}
-		
-		//togle others off:
-		for(var i = 0; i < activeArticles.length; i++){
-			var current = activeArticles[i];
-			if( current !== article){
-				current.setAttribute("class", "");
-				p = current.querySelector("p"); 
-				p.style.height =  0 + "px";
-			}
-		}
-	}
-}, false)
-</script>
-
 
 <h1>My Diary Entries</h1>
 
@@ -116,4 +46,78 @@ window.addEventListener("load", function clickBinder(){
     </p>
   </article>
 </section>
+<script>
+"use strict";
+window.addEventListener("load", function clickBinder() {
+    //set show all on H1
+    var h1 = document.querySelector("h1");
+
+    var state = "";
+    // initially, they are all hidden 
+    h1.addEventListener("click", function (e) {
+        var newState = showHideAll(state);
+        state = newState
+    }, false);
+
+    function showHideAll(state) {
+        var articles = document.querySelectorAll("#entries article");
+        var activeArticles = document.querySelectorAll("#entries .active")
+
+        if (!state && activeArticles.length === 0) {
+            var state = "active";
+        } else if (activeArticles.length > 0) {
+            state = "";
+        }
+
+        for (var i = 0; i < articles.length; i++) {
+            var article = articles[i];
+            article.setAttribute("class", state);
+            var p = article.querySelector("p");
+            if (state) {
+                p.style.height = p.scrollHeight + "px";
+            } else {
+                p.style.height = "0px";
+            }
+        }
+        return state;
+    }
+
+
+    //set up click events on the articles
+    var articles = document.querySelectorAll("#entries article");
+    for (var i = 0; i < articles.length; i++) {
+        var article = articles[i];
+        var func = (function (e) {
+            var thisArticle = article;
+            return function (e) {
+                changeClass(e, thisArticle)
+            }
+        })();
+        article.addEventListener("click", func, false);
+    }
+
+
+    function changeClass(e, article) {
+        var activeArticles = document.querySelectorAll("#entries .active")
+        var p = article.querySelector("p");
+        if (article.hasAttribute("class") === false || article.getAttribute("class") !== "active") {
+            article.setAttribute("class", "active");
+            p.style.height = p.scrollHeight + "px";
+        } else if (activeArticles.length === 1) {
+            article.setAttribute("class", "");
+            p.style.height = 0 + "px";
+        }
+
+        //togle others off:
+        for (var i = 0; i < activeArticles.length; i++) {
+            var current = activeArticles[i];
+            if (current !== article) {
+                current.setAttribute("class", "");
+                p = current.querySelector("p");
+                p.style.height = 0 + "px";
+            }
+        }
+    }
+}, false);
+</script>
 
